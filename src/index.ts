@@ -1,6 +1,11 @@
 import qs from "qs";
 
-import type { BuildOptions, ChainId, ParseResult } from "./types";
+import type {
+    BuildOptions,
+    ChainId,
+    ParseResult,
+    TransferOptions,
+} from "./types";
 import {
     assertAmount,
     assertStarknetAddress,
@@ -160,10 +165,7 @@ export const dapp = (url: string): string => {
  */
 export const transfer = (
     to_address: string,
-    options?: {
-        token?: { token_address: string; chainId: ChainId };
-        amount?: string | number;
-    }
+    options?: TransferOptions
 ): string => {
     assertStarknetAddress(to_address);
 
@@ -192,3 +194,6 @@ export const transfer = (
         parameters,
     });
 };
+
+export { STARKNET_SCHEMA };
+export type { TransferOptions, BuildOptions, ChainId, ParseResult };
