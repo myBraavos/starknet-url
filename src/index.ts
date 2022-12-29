@@ -160,7 +160,7 @@ export const dapp = (url: string): string => {
  * Generate a "transfer" StarkNet URI
  *
  * @param to_address target address
- * @param options - `token` to be used by this transfer (defaults to StarkNet-mainnet ETH),
+ * @param options - `token` to be used by this transfer (defaults to ETH/mainnet),
  *                  `amount` requested
  */
 export const transfer = (
@@ -169,13 +169,15 @@ export const transfer = (
 ): string => {
     assertStarknetAddress(to_address);
 
-    const {
-        token = {
-            token_address: STARKNET_ETH,
-            chainId: "SN_MAIN",
-        },
-        amount,
-    } = options ?? {};
+    const { token = {}, amount } = options ?? {};
+    if (typeof token.token_address === "undefined") {
+        // default to ETH
+        token.token_address = STARKNET_ETH;
+    }
+    if (typeof token.chainId === "undefined") {
+        // default to mainnet
+        token.chainId = "SN_MAIN";
+    }
     assertStarknetAddress(token.token_address);
 
     const parameters: { [key: string]: string } = { address: to_address };

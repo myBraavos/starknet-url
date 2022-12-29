@@ -12,6 +12,6 @@ export type ParseResult = {
 export type BuildOptions = Omit<ParseResult, "schema">;
 
 export type TransferOptions = {
-    token?: { token_address: string; chainId: ChainId };
+    token?: { token_address?: string; chainId?: ChainId };
     amount?: string | number;
 };
