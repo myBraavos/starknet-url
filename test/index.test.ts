@@ -1,4 +1,4 @@
-import { build, dapp, parse, transfer } from "../src";
+import { addToken, build, dapp, parse, transfer } from "../src";
 import {
     assertAmount,
     assertStarknetAddress,
@@ -385,5 +385,35 @@ describe("transfer", () => {
         ).toThrow();
 
         expect(() => transfer(STARKNET_TEST_ACCOUNT, { amount: -1 })).toThrow();
+    });
+});
+
+describe("addToken", () => {
+    it("should generate a watchAsset request for mainnet-ERC20", function () {
+        expect(addToken({ token_address: STARKNET_ETH })).toEqual(
+            `${STARKNET_SCHEMA}${STARKNET_ETH}@SN_MAIN/watchAsset?type=ERC20`
+        );
+    });
+
+    it("should generate a watchAsset request for testnet-ERC20", function () {
+        expect(
+            addToken({ token_address: STARKNET_ETH, chainId: "SN_GOERLI" })
+        ).toEqual(
+            `${STARKNET_SCHEMA}${STARKNET_ETH}@SN_GOERLI/watchAsset?type=ERC20`
+        );
+    });
+
+    it("should generate a watchAsset request url for custom chainId custom ERC20", function () {
+        expect(
+            // @ts-expect-error TS2322 we want to test raw js access
+            addToken({ token_address: "0x12345", chainId: "fooId" })
+        ).toEqual(`${STARKNET_SCHEMA}0x12345@fooId/watchAsset?type=ERC20`);
+    });
+
+    it("should throw for invalid options", function () {
+        // @ts-expect-error TS2322 we want to test raw js access
+        expect(() => addToken({ token_address: null })).toThrow();
+
+        expect(() => addToken({ token_address: "foo" })).toThrow();
     });
 });
