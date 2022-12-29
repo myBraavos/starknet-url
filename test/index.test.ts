@@ -296,13 +296,22 @@ describe("dapp", () => {
 
 describe("transfer", () => {
     it("should generate a mainnet eth request with no amount", function () {
-        expect(transfer(STARKNET_TEST_ACCOUNT)).toEqual(
+        expect(
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: STARKNET_ETH, chainId: "SN_MAIN" },
+            })
+        ).toEqual(
             `${STARKNET_SCHEMA}${STARKNET_ETH}@SN_MAIN/transfer?address=${STARKNET_TEST_ACCOUNT}`
         );
     });
 
     it("should generate a mainnet eth request with amount", function () {
-        expect(transfer(STARKNET_TEST_ACCOUNT, { amount: 1.1 })).toEqual(
+        expect(
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: STARKNET_ETH, chainId: "SN_MAIN" },
+                amount: 1.1,
+            })
+        ).toEqual(
             `${STARKNET_SCHEMA}${STARKNET_ETH}@SN_MAIN/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=1.1`
         );
     });
@@ -356,7 +365,11 @@ describe("transfer", () => {
     });
 
     it("should throw on invalid to_address", function () {
-        expect(() => transfer("0x")).toThrow();
+        expect(() =>
+            transfer("0x", {
+                token: { token_address: "0x0", chainId: "SN_GOERLI" },
+            })
+        ).toThrow();
     });
 
     it("should throw on invalid token option", function () {
@@ -375,22 +388,33 @@ describe("transfer", () => {
 
     it("should throw on invalid amount", function () {
         expect(() =>
-            transfer(STARKNET_TEST_ACCOUNT, { amount: "foo" })
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: STARKNET_ETH, chainId: "SN_GOERLI" },
+                amount: "foo",
+            })
         ).toThrow();
 
         expect(() =>
             transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: STARKNET_ETH, chainId: "SN_GOERLI" },
                 amount: Number.POSITIVE_INFINITY,
             })
         ).toThrow();
 
-        expect(() => transfer(STARKNET_TEST_ACCOUNT, { amount: -1 })).toThrow();
+        expect(() =>
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: STARKNET_ETH, chainId: "SN_GOERLI" },
+                amount: -1,
+            })
+        ).toThrow();
     });
 });
 
 describe("addToken", () => {
     it("should generate a watchAsset request for mainnet-ERC20", function () {
-        expect(addToken({ token_address: STARKNET_ETH })).toEqual(
+        expect(
+            addToken({ token_address: STARKNET_ETH, chainId: "SN_MAIN" })
+        ).toEqual(
             `${STARKNET_SCHEMA}${STARKNET_ETH}@SN_MAIN/watchAsset?type=ERC20`
         );
     });
@@ -414,6 +438,8 @@ describe("addToken", () => {
         // @ts-expect-error TS2322 we want to test raw js access
         expect(() => addToken({ token_address: null })).toThrow();
 
-        expect(() => addToken({ token_address: "foo" })).toThrow();
+        expect(() =>
+            addToken({ token_address: "foo", chainId: "SN_MAIN" })
+        ).toThrow();
     });
 });
