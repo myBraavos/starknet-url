@@ -24,3 +24,10 @@ export const STARKNET_ADDRESS_REGEX = "0x[0-9a-fA-F]{1,64}";
 
 export const STARKNET_ETH =
     "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
+
+export enum StarknetChainId {
+    // noinspection JSUnusedGlobalSymbols
+    MAINNET = "0x534e5f4d41494e",
+    GOERLI = "0x534e5f474f45524c49",
+    GOERLI2 = "0x534e5f474f45524c4932",
+}

@@ -13,6 +13,7 @@ import {
     getAmountKey,
     STARKNET_ADDRESS_REGEX,
     STARKNET_SCHEMA,
+    StarknetChainId,
 } from "./common";
 import isURL from "validator/lib/isURL";
 
@@ -211,5 +212,5 @@ export const addToken = (token: Token): string => {
     });
 };
 
-export { STARKNET_SCHEMA };
-export type { Token, TransferOptions, BuildOptions, ChainId, ParseResult };
+export { StarknetChainId, STARKNET_SCHEMA };
+export type { BuildOptions, ChainId, ParseResult, Token, TransferOptions };
