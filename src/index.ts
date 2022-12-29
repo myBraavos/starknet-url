@@ -12,7 +12,6 @@ import {
     assertStarknetAddress,
     getAmountKey,
     STARKNET_ADDRESS_REGEX,
-    STARKNET_ETH,
     STARKNET_SCHEMA,
 } from "./common";
 import isURL from "validator/lib/isURL";
@@ -161,26 +160,20 @@ export const dapp = (url: string): string => {
  * Generate a "transfer" StarkNet URI
  *
  * @param to_address target address
- * @param options - `token` to be used by this transfer (defaults to ETH/mainnet),
- *                  `amount` requested
+ * @param options - `token` to be used by this transfer,
+ *                  `amount` requested (optional)
  */
 export const transfer = (
     to_address: string,
-    options?: TransferOptions
+    options: TransferOptions
 ): string => {
     assertStarknetAddress(to_address);
 
-    const { token = {}, amount } = options ?? {};
-    if (typeof token.token_address === "undefined") {
-        // default to mainnet-ETH
-        token.token_address = STARKNET_ETH;
-        token.chainId = "SN_MAIN";
-    }
-    if (!token.chainId) {
-        // default to mainnet
-        token.chainId = "SN_MAIN";
-    }
+    const { token, amount } = options;
     assertStarknetAddress(token.token_address);
+    if (!token.chainId) {
+        throw new Error(`Missing "chainId"`);
+    }
 
     const parameters: { [key: string]: string } = { address: to_address };
     if (amount) {
@@ -202,12 +195,12 @@ export const transfer = (
 /**
  * Generate a "watchAsset" StarkNet URI for watching the given token
  *
- * @param token  to be added by this watchAsset request (chainId defaults to mainnet)
+ * @param token  to be added by this watchAsset request
  */
 export const addToken = (token: Token): string => {
     assertStarknetAddress(token.token_address);
     if (!token.chainId) {
-        token.chainId = "SN_MAIN";
+        throw new Error(`Missing "chainId"`);
     }
 
     return build({
