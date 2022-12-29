@@ -1,6 +1,11 @@
 import qs from "qs";
 
-import type { BuildOptions, ChainId, ParseResult } from "./types";
+import type {
+    BuildOptions,
+    ChainId,
+    ParseResult,
+    TransferOptions,
+} from "./types";
 import {
     assertAmount,
     assertStarknetAddress,
@@ -155,25 +160,24 @@ export const dapp = (url: string): string => {
  * Generate a "transfer" StarkNet URI
  *
  * @param to_address target address
- * @param options - `token` to be used by this transfer (defaults to StarkNet-mainnet ETH),
+ * @param options - `token` to be used by this transfer (defaults to ETH/mainnet),
  *                  `amount` requested
  */
 export const transfer = (
     to_address: string,
-    options?: {
-        token?: { token_address: string; chainId: ChainId };
-        amount?: string | number;
-    }
+    options?: TransferOptions
 ): string => {
     assertStarknetAddress(to_address);
 
-    const {
-        token = {
-            token_address: STARKNET_ETH,
-            chainId: "SN_MAIN",
-        },
-        amount,
-    } = options ?? {};
+    const { token = {}, amount } = options ?? {};
+    if (typeof token.token_address === "undefined") {
+        // default to ETH
+        token.token_address = STARKNET_ETH;
+    }
+    if (typeof token.chainId === "undefined") {
+        // default to mainnet
+        token.chainId = "SN_MAIN";
+    }
     assertStarknetAddress(token.token_address);
 
     const parameters: { [key: string]: string } = { address: to_address };
@@ -192,3 +196,6 @@ export const transfer = (
         parameters,
     });
 };
+
+export { STARKNET_SCHEMA };
+export type { TransferOptions, BuildOptions, ChainId, ParseResult };

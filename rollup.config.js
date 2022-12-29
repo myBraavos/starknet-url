@@ -14,7 +14,7 @@ export default {
             sourcemap: isDev,
         },
     ],
-    external: ["qs"],
+    external: ["qs", "validator/lib/isURL"],
     plugins: [
         del({ targets: "dist/*" }),
 
