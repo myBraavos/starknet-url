@@ -9,7 +9,7 @@ export const assertAmount = (amount: string) => {
 };
 
 export const assertStarknetAddress = (address: string): boolean => {
-    if (!new RegExp(STARKNET_ADDRESS_REGEX).test(address)) {
+    if (!new RegExp(`^${STARKNET_ADDRESS_REGEX}$`).test(address)) {
         throw new Error(`Invalid StarkNet address: "${address}"`);
     }
     return true;

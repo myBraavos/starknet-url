@@ -1,6 +1,7 @@
 import { build, dapp, parse, transfer } from "../src";
 import {
     assertAmount,
+    assertStarknetAddress,
     getAmountKey,
     STARKNET_ETH,
     STARKNET_SCHEMA,
@@ -211,6 +212,48 @@ describe("common", () => {
     it("should assert-amount for number-string", function () {
         expect(() => assertAmount("0.1e18")).not.toThrow();
     });
+
+    it("should assert-address for undefined", function () {
+        // @ts-expect-error TS2345 we want to test raw js access
+        expect(() => assertStarknetAddress(undefined)).toThrow();
+    });
+
+    it("should assert-address for text", function () {
+        expect(() => assertStarknetAddress("foo")).toThrow();
+    });
+
+    it("should assert-address for invalid prefixes", function () {
+        expect(() => assertStarknetAddress(" 0x0")).toThrow();
+        expect(() => assertStarknetAddress("-0x0")).toThrow();
+        expect(() => assertStarknetAddress("\n0x0")).toThrow();
+    });
+
+    it("should assert-address for empty string", function () {
+        expect(() => assertStarknetAddress("")).toThrow();
+    });
+
+    it("should assert-address for number", function () {
+        // @ts-expect-error TS2345 we want to test raw js access
+        expect(() => assertStarknetAddress(0.1)).toThrow();
+    });
+
+    it("should assert-address for too short", function () {
+        expect(() => assertStarknetAddress("0x")).toThrow();
+    });
+
+    it("should assert-address for too long", function () {
+        expect(() =>
+            assertStarknetAddress(`${STARKNET_TEST_ACCOUNT}000`)
+        ).toThrow();
+    });
+
+    it("should assert-address for short", function () {
+        expect(() => assertStarknetAddress("0x0")).toBeTruthy();
+    });
+
+    it("should assert-address for long", function () {
+        expect(() => assertStarknetAddress(STARKNET_TEST_ACCOUNT)).toBeTruthy();
+    });
 });
 
 describe("dapp", () => {
@@ -279,6 +322,33 @@ describe("transfer", () => {
             transfer(STARKNET_TEST_ACCOUNT, {
                 token: { token_address: "0x12345", chainId: "SN_GOERLI2" },
                 amount: "0o377777777777777777",
+            })
+        ).toEqual(
+            `${STARKNET_SCHEMA}0x12345@SN_GOERLI2/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=9.007199254740991e15`
+        );
+
+        expect(
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: "0x12345", chainId: "SN_GOERLI2" },
+                amount: "9007199254740991",
+            })
+        ).toEqual(
+            `${STARKNET_SCHEMA}0x12345@SN_GOERLI2/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=9.007199254740991e15`
+        );
+
+        expect(
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: "0x12345", chainId: "SN_GOERLI2" },
+                amount: "0x1fffffffffffff",
+            })
+        ).toEqual(
+            `${STARKNET_SCHEMA}0x12345@SN_GOERLI2/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=9.007199254740991e15`
+        );
+
+        expect(
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: "0x12345", chainId: "SN_GOERLI2" },
+                amount: "0b11111111111111111111111111111111111111111111111111111",
             })
         ).toEqual(
             `${STARKNET_SCHEMA}0x12345@SN_GOERLI2/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=9.007199254740991e15`
