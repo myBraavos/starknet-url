@@ -1,7 +1,15 @@
 import qs from "qs";
 
 import type { BuildOptions, ChainId, ParseResult } from "./types";
-import { assertAmount, getAmountKey, schema } from "./common";
+import {
+    assertAmount,
+    assertStarknetAddress,
+    getAmountKey,
+    STARKNET_ADDRESS_REGEX,
+    STARKNET_ETH,
+    STARKNET_SCHEMA,
+} from "./common";
+import isURL from "validator/lib/isURL";
 
 /**
  * Parse a StarkNet URI
@@ -14,21 +22,21 @@ export const parse = (uri: string): ParseResult => {
         throw new Error(`"uri" must be a string`);
     }
 
-    if (!uri.startsWith(schema)) {
+    if (!uri.startsWith(STARKNET_SCHEMA)) {
         throw new Error(`Invalid schema URI`);
     }
 
-    let address_regex = "(0x[0-9a-fA-F]{1,64})"; // valid StarkNet address regex
+    let address_regex = `(${STARKNET_ADDRESS_REGEX})`;
     let prefix = undefined;
 
-    if (!uri.startsWith(`${schema}0x`)) {
+    if (!uri.startsWith(`${STARKNET_SCHEMA}0x`)) {
         // a non-address prefix must end with "-"
-        const prefixEnd = uri.indexOf("-", schema.length);
+        const prefixEnd = uri.indexOf("-", STARKNET_SCHEMA.length);
         if (prefixEnd === -1) {
             throw new Error("Missing prefix");
         }
 
-        prefix = uri.substring(schema.length, prefixEnd);
+        prefix = uri.substring(STARKNET_SCHEMA.length, prefixEnd);
 
         const restOfURI = uri.substring(prefixEnd + 1);
         if (!restOfURI.toLowerCase().startsWith("0x")) {
@@ -43,7 +51,7 @@ export const parse = (uri: string): ParseResult => {
 
     const matched = uri.match(
         new RegExp(
-            `^${schema}(${prefix}-)?${address_regex}\\@?(\\w*)*\\/?(\\w*)*`
+            `^${STARKNET_SCHEMA}(${prefix}-)?${address_regex}\\@?(\\w*)*\\/?(\\w*)*`
         )
     );
     if (!matched) {
@@ -76,7 +84,7 @@ export const parse = (uri: string): ParseResult => {
     // remove `undefined` keys
     return JSON.parse(
         JSON.stringify({
-            schema: schema.replace(":", ""),
+            schema: STARKNET_SCHEMA.replace(":", ""),
             prefix,
             target_address,
             chain_id: chain_id as ChainId,
@@ -91,7 +99,7 @@ export const parse = (uri: string): ParseResult => {
  *
  * @param options
  */
-export const build = (options: BuildOptions) => {
+export const build = (options: BuildOptions): string => {
     const { prefix, target_address, chain_id, function_name, parameters } =
         options;
 
@@ -117,7 +125,7 @@ export const build = (options: BuildOptions) => {
         queryParams = qs.stringify(parameters);
     }
 
-    let url = schema;
+    let url = STARKNET_SCHEMA;
     if (prefix) url += `${prefix}-`; // i.e. "pay-"
     url += target_address;
     if (chain_id) url += `@${chain_id}`;
@@ -125,4 +133,62 @@ export const build = (options: BuildOptions) => {
     if (queryParams) url += `?${queryParams}`;
 
     return url;
+};
+
+/**
+ * Generate a "dapp" StarkNet URI
+ *
+ * @param url dapp url
+ */
+export const dapp = (url: string): string => {
+    if (!isURL(url, { protocols: ["https", "http"], require_protocol: true })) {
+        throw new Error(`Invalid url: "${url}"`);
+    }
+
+    return build({
+        prefix: "dapp",
+        target_address: url.replace(/(https?):\/\//, ""),
+    });
+};
+
+/**
+ * Generate a "transfer" StarkNet URI
+ *
+ * @param to_address target address
+ * @param options - `token` to be used by this transfer (defaults to StarkNet-mainnet ETH),
+ *                  `amount` requested
+ */
+export const transfer = (
+    to_address: string,
+    options?: {
+        token?: { token_address: string; chainId: ChainId };
+        amount?: string | number;
+    }
+): string => {
+    assertStarknetAddress(to_address);
+
+    const {
+        token = {
+            token_address: STARKNET_ETH,
+            chainId: "SN_MAIN",
+        },
+        amount,
+    } = options ?? {};
+    assertStarknetAddress(token.token_address);
+
+    const parameters: { [key: string]: string } = { address: to_address };
+    if (amount) {
+        parameters[getAmountKey("transfer")] = `${amount}`;
+    }
+
+    return build({
+        // deliberately skipping the legacy "pay-" prefix,
+        // the "transfer" function_name is clear enough
+        // prefix: "pay-",
+
+        target_address: token.token_address,
+        chain_id: token.chainId,
+        function_name: "transfer",
+        parameters,
+    });
 };
