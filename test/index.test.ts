@@ -429,7 +429,6 @@ describe("addToken", () => {
 
     it("should generate a watchAsset request url for custom chainId custom ERC20", function () {
         expect(
-            // @ts-expect-error TS2322 we want to test raw js access
             addToken({ token_address: "0x12345", chainId: "fooId" })
         ).toEqual(`${STARKNET_SCHEMA}0x12345@fooId/watchAsset?type=ERC20`);
     });
