@@ -4,6 +4,7 @@ import type {
     BuildOptions,
     ChainId,
     ParseResult,
+    Token,
     TransferOptions,
 } from "./types";
 import {
@@ -171,10 +172,11 @@ export const transfer = (
 
     const { token = {}, amount } = options ?? {};
     if (typeof token.token_address === "undefined") {
-        // default to ETH
+        // default to mainnet-ETH
         token.token_address = STARKNET_ETH;
+        token.chainId = "SN_MAIN";
     }
-    if (typeof token.chainId === "undefined") {
+    if (!token.chainId) {
         // default to mainnet
         token.chainId = "SN_MAIN";
     }
@@ -187,8 +189,8 @@ export const transfer = (
 
     return build({
         // deliberately skipping the legacy "pay-" prefix,
-        // the "transfer" function_name is clear enough
-        // prefix: "pay-",
+        // the "transfer" `function_name` is clear enough
+        // prefix: "pay",
 
         target_address: token.token_address,
         chain_id: token.chainId,
@@ -197,5 +199,24 @@ export const transfer = (
     });
 };
 
+/**
+ * Generate a "watchAsset" StarkNet URI for watching the given token
+ *
+ * @param token  to be added by this watchAsset request (chainId defaults to mainnet)
+ */
+export const addToken = (token: Token): string => {
+    assertStarknetAddress(token.token_address);
+    if (!token.chainId) {
+        token.chainId = "SN_MAIN";
+    }
+
+    return build({
+        target_address: token.token_address,
+        chain_id: token.chainId,
+        function_name: "watchAsset",
+        parameters: { type: "ERC20" },
+    });
+};
+
 export { STARKNET_SCHEMA };
-export type { TransferOptions, BuildOptions, ChainId, ParseResult };
+export type { Token, TransferOptions, BuildOptions, ChainId, ParseResult };
