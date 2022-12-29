@@ -1,4 +1,10 @@
-export type ChainId = "SN_MAIN" | "SN_GOERLI" | "SN_GOERLI2";
+export enum StarknetChainId {
+    MAINNET = "0x534e5f4d41494e",
+    GOERLI = "0x534e5f474f45524c49",
+    GOERLI2 = "0x534e5f474f45524c4932",
+}
+
+export type ChainId = StarknetChainId | string | number;
 
 export type ParseResult = {
     schema: string;
