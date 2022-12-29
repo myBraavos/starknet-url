@@ -1,37 +1,46 @@
-import { build, parse } from "../src";
-import { assertAmount, getAmountKey } from "../src/common";
+import { build, dapp, parse, transfer } from "../src";
+import {
+    assertAmount,
+    getAmountKey,
+    STARKNET_ETH,
+    STARKNET_SCHEMA,
+} from "../src/common";
 
-const STARKNET_ACCOUNT =
+const STARKNET_TEST_ACCOUNT =
     "0x0603202200000000000000000000000000000000000000000000000000001015";
-const STARKNET_ETH =
-    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
 
 describe("parse", () => {
     it("should parse URI with payload starting with `0x`", () => {
-        expect(parse(`starknet:${STARKNET_ACCOUNT}`)).toEqual({
+        expect(parse(`${STARKNET_SCHEMA}${STARKNET_TEST_ACCOUNT}`)).toEqual({
             schema: "starknet",
-            target_address: STARKNET_ACCOUNT,
+            target_address: STARKNET_TEST_ACCOUNT,
         });
     });
 
     it("should parse URI with payload starting with `0x` and `pay` prefix", () => {
-        expect(parse("starknet:pay-" + STARKNET_ACCOUNT)).toEqual({
-            schema: "starknet",
-            prefix: "pay",
-            target_address: STARKNET_ACCOUNT,
-        });
+        expect(parse(`${STARKNET_SCHEMA}pay-${STARKNET_TEST_ACCOUNT}`)).toEqual(
+            {
+                schema: "starknet",
+                prefix: "pay",
+                target_address: STARKNET_TEST_ACCOUNT,
+            }
+        );
     });
 
     it("should parse URI with payload starting with `0x` and `foo` prefix", () => {
-        expect(parse("starknet:foo-" + STARKNET_ACCOUNT)).toEqual({
-            schema: "starknet",
-            prefix: "foo",
-            target_address: STARKNET_ACCOUNT,
-        });
+        expect(parse(`${STARKNET_SCHEMA}foo-${STARKNET_TEST_ACCOUNT}`)).toEqual(
+            {
+                schema: "starknet",
+                prefix: "foo",
+                target_address: STARKNET_TEST_ACCOUNT,
+            }
+        );
     });
 
     it("should parse URI with a domain name", () => {
-        expect(parse("starknet:foo-first-sword-of-braavos.stark")).toEqual({
+        expect(
+            parse(`${STARKNET_SCHEMA}foo-first-sword-of-braavos.stark`)
+        ).toEqual({
             schema: "starknet",
             prefix: "foo",
             target_address: "first-sword-of-braavos.stark",
@@ -39,9 +48,11 @@ describe("parse", () => {
     });
 
     it("should parse URI with chain id", () => {
-        expect(parse(`starknet:${STARKNET_ACCOUNT}@SN_GOERLI`)).toEqual({
+        expect(
+            parse(`${STARKNET_SCHEMA}${STARKNET_TEST_ACCOUNT}@SN_GOERLI`)
+        ).toEqual({
             schema: "starknet",
-            target_address: STARKNET_ACCOUNT,
+            target_address: STARKNET_TEST_ACCOUNT,
             chain_id: "SN_GOERLI",
         });
     });
@@ -49,14 +60,14 @@ describe("parse", () => {
     it("should parse an ERC20 token transfer", () => {
         expect(
             parse(
-                `starknet:${STARKNET_ETH}/transfer?address=${STARKNET_ACCOUNT}&uint256=1`
+                `${STARKNET_SCHEMA}${STARKNET_ETH}/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=1`
             )
         ).toEqual({
             schema: "starknet",
             target_address: STARKNET_ETH,
             function_name: "transfer",
             parameters: {
-                address: STARKNET_ACCOUNT,
+                address: STARKNET_TEST_ACCOUNT,
                 uint256: "1",
             },
         });
@@ -65,7 +76,7 @@ describe("parse", () => {
     it("should parse a url with value and gas parameters", () => {
         expect(
             parse(
-                `starknet:${STARKNET_ETH}?value=2.014e18&gas=10&gasLimit=21000&gasPrice=50`
+                `${STARKNET_SCHEMA}${STARKNET_ETH}?value=2.014e18&gas=10&gasLimit=21000&gasPrice=50`
             )
         ).toEqual({
             schema: "starknet",
@@ -84,27 +95,27 @@ describe("build", () => {
     it("should build a URL with payload starting with `0x`", () => {
         expect(
             build({
-                target_address: STARKNET_ACCOUNT,
+                target_address: STARKNET_TEST_ACCOUNT,
             })
-        ).toEqual(`starknet:${STARKNET_ACCOUNT}`);
+        ).toEqual(`${STARKNET_SCHEMA}${STARKNET_TEST_ACCOUNT}`);
     });
 
     it("should build a URL with payload starting with `0x` and `pay` prefix", () => {
         expect(
             build({
                 prefix: "pay",
-                target_address: STARKNET_ACCOUNT,
+                target_address: STARKNET_TEST_ACCOUNT,
             })
-        ).toEqual(`starknet:pay-${STARKNET_ACCOUNT}`);
+        ).toEqual(`${STARKNET_SCHEMA}pay-${STARKNET_TEST_ACCOUNT}`);
     });
 
     it("should build a URL with payload starting with `0x` and `foo` prefix", () => {
         expect(
             build({
                 prefix: "foo",
-                target_address: STARKNET_ACCOUNT,
+                target_address: STARKNET_TEST_ACCOUNT,
             })
-        ).toEqual(`starknet:foo-${STARKNET_ACCOUNT}`);
+        ).toEqual(`${STARKNET_SCHEMA}foo-${STARKNET_TEST_ACCOUNT}`);
     });
 
     it("should build a URL with a domain name", () => {
@@ -113,16 +124,16 @@ describe("build", () => {
                 prefix: "foo",
                 target_address: "first-sword-of-braavos.stark",
             })
-        ).toEqual("starknet:foo-first-sword-of-braavos.stark");
+        ).toEqual(`${STARKNET_SCHEMA}foo-first-sword-of-braavos.stark`);
     });
 
     it("should build a URL with chain id", () => {
         expect(
             build({
-                target_address: STARKNET_ACCOUNT,
+                target_address: STARKNET_TEST_ACCOUNT,
                 chain_id: "SN_GOERLI",
             })
-        ).toEqual(`starknet:${STARKNET_ACCOUNT}@SN_GOERLI`);
+        ).toEqual(`${STARKNET_SCHEMA}${STARKNET_TEST_ACCOUNT}@SN_GOERLI`);
     });
 
     it("should build a URL for an ERC20 token transfer", () => {
@@ -131,12 +142,12 @@ describe("build", () => {
                 target_address: STARKNET_ETH,
                 function_name: "transfer",
                 parameters: {
-                    address: STARKNET_ACCOUNT,
+                    address: STARKNET_TEST_ACCOUNT,
                     uint256: "1",
                 },
             })
         ).toEqual(
-            `starknet:${STARKNET_ETH}/transfer?address=${STARKNET_ACCOUNT}&uint256=1`
+            `${STARKNET_SCHEMA}${STARKNET_ETH}/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=1`
         );
     });
 
@@ -152,7 +163,7 @@ describe("build", () => {
                 },
             })
         ).toEqual(
-            `starknet:${STARKNET_ETH}?value=2.014e18&gas=10&gasLimit=21000&gasPrice=50`
+            `${STARKNET_SCHEMA}${STARKNET_ETH}?value=2.014e18&gas=10&gasLimit=21000&gasPrice=50`
         );
     });
 });
@@ -171,7 +182,7 @@ describe("common", () => {
     });
 
     it("should assert-amount for undefined", function () {
-        // @ts-ignore
+        // @ts-expect-error TS2345 we want to test raw js access
         expect(() => assertAmount(undefined)).toThrow();
     });
 
@@ -184,7 +195,7 @@ describe("common", () => {
     });
 
     it("should assert-amount for negative number", function () {
-        // @ts-ignore
+        // @ts-expect-error TS2345 we want to test raw js access
         expect(() => assertAmount(-1)).toThrow();
     });
 
@@ -193,11 +204,116 @@ describe("common", () => {
     });
 
     it("should assert-amount for number", function () {
-        // @ts-ignore
+        // @ts-expect-error TS2345 we want to test raw js access
         expect(() => assertAmount(0.1)).not.toThrow();
     });
 
     it("should assert-amount for number-string", function () {
         expect(() => assertAmount("0.1e18")).not.toThrow();
+    });
+});
+
+describe("dapp", () => {
+    it("should handle https url", function () {
+        expect(dapp("https://www.example.com/#/")).toEqual(
+            `${STARKNET_SCHEMA}dapp-www.example.com/#/`
+        );
+    });
+
+    it("should handle http url", function () {
+        // noinspection HttpUrlsUsage
+        expect(dapp("http://example.com?q=1")).toEqual(
+            `${STARKNET_SCHEMA}dapp-example.com?q=1`
+        );
+    });
+
+    it("should keep qs and hash", function () {
+        expect(dapp("https://example.com/#foo?q=1")).toEqual(
+            `${STARKNET_SCHEMA}dapp-example.com/#foo?q=1`
+        );
+    });
+
+    it("should throw on invalid protocol", function () {
+        expect(() => dapp("ftp://example.com")).toThrow();
+    });
+
+    it("should throw on missing protocol", function () {
+        expect(() => dapp("example.com")).toThrow();
+        expect(() => dapp("www.example.com")).toThrow();
+    });
+
+    it("should throw on invalid domain", function () {
+        expect(() => dapp("example")).toThrow();
+    });
+
+    it("should throw on empty string", function () {
+        expect(() => dapp("")).toThrow();
+    });
+});
+
+describe("transfer", () => {
+    it("should generate a mainnet eth request with no amount", function () {
+        expect(transfer(STARKNET_TEST_ACCOUNT)).toEqual(
+            `${STARKNET_SCHEMA}${STARKNET_ETH}@SN_MAIN/transfer?address=${STARKNET_TEST_ACCOUNT}`
+        );
+    });
+
+    it("should generate a mainnet eth request with amount", function () {
+        expect(transfer(STARKNET_TEST_ACCOUNT, { amount: 1.1 })).toEqual(
+            `${STARKNET_SCHEMA}${STARKNET_ETH}@SN_MAIN/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=1.1`
+        );
+    });
+
+    it("should generate a custom token request with no amount", function () {
+        expect(
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: "0x12345", chainId: "SN_GOERLI2" },
+            })
+        ).toEqual(
+            `${STARKNET_SCHEMA}0x12345@SN_GOERLI2/transfer?address=${STARKNET_TEST_ACCOUNT}`
+        );
+    });
+
+    it("should generate a custom token request with amount", function () {
+        expect(
+            transfer(STARKNET_TEST_ACCOUNT, {
+                token: { token_address: "0x12345", chainId: "SN_GOERLI2" },
+                amount: "0o377777777777777777",
+            })
+        ).toEqual(
+            `${STARKNET_SCHEMA}0x12345@SN_GOERLI2/transfer?address=${STARKNET_TEST_ACCOUNT}&uint256=9.007199254740991e15`
+        );
+    });
+
+    it("should throw on invalid to_address", function () {
+        expect(() => transfer("0x")).toThrow();
+    });
+
+    it("should throw on invalid token option", function () {
+        expect(() =>
+            // @ts-expect-error TS2322 we want to test raw js access
+            transfer(STARKNET_TEST_ACCOUNT, { token: null })
+        ).toThrow();
+    });
+
+    it("should throw on invalid token_address", function () {
+        expect(() =>
+            // @ts-expect-error TS2322 we want to test raw js access
+            transfer(STARKNET_TEST_ACCOUNT, { token: { token_address: null } })
+        ).toThrow();
+    });
+
+    it("should throw on invalid amount", function () {
+        expect(() =>
+            transfer(STARKNET_TEST_ACCOUNT, { amount: "foo" })
+        ).toThrow();
+
+        expect(() =>
+            transfer(STARKNET_TEST_ACCOUNT, {
+                amount: Number.POSITIVE_INFINITY,
+            })
+        ).toThrow();
+
+        expect(() => transfer(STARKNET_TEST_ACCOUNT, { amount: -1 })).toThrow();
     });
 });
