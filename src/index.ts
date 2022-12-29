@@ -178,7 +178,7 @@ export const transfer = (
 
     const parameters: { [key: string]: string } = { address: to_address };
     if (amount) {
-        parameters["uint256"] = `${amount}`;
+        parameters[getAmountKey("transfer")] = `${amount}`;
     }
 
     return build({
