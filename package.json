@@ -61,6 +61,6 @@
         "validator": "^13.7.0"
     },
     "lint-staged": {
-        "**/*.{js}": "prettier --write --ignore-unknown"
+        "**/*.{js,ts}": "prettier --write --ignore-unknown"
     }
 }
