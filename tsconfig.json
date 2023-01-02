@@ -14,7 +14,7 @@
         "module": "ESNext",
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "noEmit": true
+        "noEmit": false
     },
     "exclude": ["node_modules"],
     "include": ["src"]
