@@ -160,6 +160,13 @@ returns a URI `string`
 
 Same as *BuildOptions* (per given URI use-case), plus `schema` which must always be `starknet:`
 
+#### TransferOptions
+| Parameter | Type                 | Description                    |
+|:----------|:---------------------|:-------------------------------|
+| `token`   | `Token`              | **Required**. token to be used |
+| `amount`  | `string` or `number` | **Optional**. requested amount |
+
+
 #### Token
 | Parameter       | Type      | Description                            |
 |:----------------|:----------|:---------------------------------------|
