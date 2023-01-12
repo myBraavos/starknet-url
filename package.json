@@ -1,6 +1,6 @@
 {
     "name": "starknet-url",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Build & parse StarkNet URLs",
     "repository": {
         "url": "https://github.com/myBraavos/starknet-url"
