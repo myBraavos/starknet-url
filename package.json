@@ -2,6 +2,9 @@
     "name": "starknet-url",
     "version": "1.0.1",
     "description": "Build & parse StarkNet URLs",
+    "repository": {
+        "url": "https://github.com/myBraavos/starknet-url"
+    },
     "keywords": [
         "erc681",
         "erc831",
